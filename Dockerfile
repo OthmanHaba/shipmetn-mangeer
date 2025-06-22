@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libxml2-dev \
     libpq-dev \
+    postgresql-client \
     zip \
     unzip \
     nodejs \
@@ -28,6 +29,9 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Copy application files
 COPY . .
 
+# Install Composer dependencies
+RUN composer install --optimize-autoloader --no-dev
+
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html \
@@ -37,5 +41,46 @@ RUN chown -R www-data:www-data /var/www/html \
 # Switch to www-data user
 USER www-data
 
+# Create startup script
+COPY --chown=www-data:www-data <<EOF /var/www/html/start.sh
+#!/bin/bash
+set -e
+
+echo "Starting Laravel application setup..."
+
+# Generate app key if not exists
+if [ ! -f .env ]; then
+    cp .env.example .env
+fi
+
+php artisan key:generate --force
+
+# Wait for database to be ready
+echo "Waiting for database to be ready..."
+until pg_isready -h db -p 5432 -U postgres; do
+    echo "Database is unavailable - sleeping"
+    sleep 2
+done
+
+echo "Database is ready!"
+
+# Run Laravel setup commands
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan migrate --force
+php artisan db:seed --force
+
+echo "Laravel setup completed!"
+
+# Start the application
+exec php artisan serve --host=0.0.0.0 --port=8000
+EOF
+
+RUN chmod +x /var/www/html/start.sh
+
 # Expose port 8000
 EXPOSE 8000
+
+# Start the application
+CMD ["/var/www/html/start.sh"]
