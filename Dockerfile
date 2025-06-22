@@ -32,7 +32,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 COPY . .
 
 # Install Composer dependencies
-RUN composer install --optimize-autoloader --no-dev
+RUN composer install
 
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html \
