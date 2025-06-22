@@ -30,8 +30,8 @@ services:
             - SESSION_LIFETIME=120
         depends_on:
             - db
-    networks:
-      - shipment_network
+        networks:
+            - shipment_network
 
     db:
         image: postgres:15-alpine
