@@ -1,78 +1,78 @@
 version: '3.8'
 
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: shipment_accounting_app
-    restart: unless-stopped
-    working_dir: /var/www/html
-    volumes:
-      - ./:/var/www/html
-      - ./storage:/var/www/html/storage
-      - ./bootstrap/cache:/var/www/html/bootstrap/cache
-    ports:
-      - "8000:8000"
-    environment:
-      - APP_NAME=ShipmentAccounting
-      - APP_ENV=production
-      - APP_KEY=base64:your-app-key-here
-      - APP_DEBUG=false
-      - APP_URL=http://localhost:8000
-      - DB_CONNECTION=pgsql
-      - DB_HOST=db
-      - DB_PORT=5432
-      - DB_DATABASE=shipment_accounting
-      - DB_USERNAME=postgres
-      - DB_PASSWORD=password
-      - CACHE_DRIVER=file
-      - QUEUE_CONNECTION=sync
-      - SESSION_DRIVER=file
-      - SESSION_LIFETIME=120
-    depends_on:
-      - db
-    networks:
-      - shipment_network
-    command: >
-      bash -c "composer install --optimize-autoloader --no-dev &&
-               php artisan key:generate &&
-               php artisan config:cache &&
-               php artisan route:cache &&
-               php artisan view:cache &&
-               php artisan migrate --force &&
-               php artisan db:seed --force &&
-               php artisan serve --host=0.0.0.0 --port=8000"
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: shipment_accounting_app
+        restart: unless-stopped
+        working_dir: /var/www/html
+        volumes:
+            - ./:/var/www/html
+            - ./storage:/var/www/html/storage
+            - ./bootstrap/cache:/var/www/html/bootstrap/cache
+        ports:
+            - "9090:8000"
+        environment:
+            - APP_NAME=ShipmentAccounting
+            - APP_ENV=production
+            - APP_KEY=base64:your-app-key-here
+            - APP_DEBUG=false
+            - APP_URL=http://localhost:8000
+            - DB_CONNECTION=pgsql
+            - DB_HOST=db
+            - DB_PORT=5432
+            - DB_DATABASE=shipment_accounting
+            - DB_USERNAME=postgres
+            - DB_PASSWORD=password
+            - CACHE_DRIVER=file
+            - QUEUE_CONNECTION=sync
+            - SESSION_DRIVER=file
+            - SESSION_LIFETIME=120
+        depends_on:
+            - db
+        networks:
+            - shipment_network
+        command: >
+            bash -c "composer install --optimize-autoloader --no-dev &&
+                     php artisan key:generate &&
+                     php artisan config:cache &&
+                     php artisan route:cache &&
+                     php artisan view:cache &&
+                     php artisan migrate --force &&
+                     php artisan db:seed --force &&
+                     php artisan serve --host=0.0.0.0 --port=8000"
 
-  db:
-    image: postgres:15-alpine
-    container_name: shipment_accounting_db
-    restart: unless-stopped
-    environment:
-      - POSTGRES_DB=shipment_accounting
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
-      - PGDATA=/var/lib/postgresql/data/pgdata
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    networks:
-      - shipment_network
+    db:
+        image: postgres:15-alpine
+        container_name: shipment_accounting_db
+        restart: unless-stopped
+        environment:
+            - POSTGRES_DB=shipment_accounting
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=password
+            - PGDATA=/var/lib/postgresql/data/pgdata
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        ports:
+            - "5432:5432"
+        networks:
+            - shipment_network
 
-  redis:
-    image: redis:7-alpine
-    container_name: shipment_accounting_redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    networks:
-      - shipment_network
+    redis:
+        image: redis:7-alpine
+        container_name: shipment_accounting_redis
+        restart: unless-stopped
+        ports:
+            - "6379:6379"
+        networks:
+            - shipment_network
 
 volumes:
-  postgres_data:
-    driver: local
+    postgres_data:
+        driver: local
 
 networks:
-  shipment_network:
-    driver: bridge
+    shipment_network:
+        driver: bridge
