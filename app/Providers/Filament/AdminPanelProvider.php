@@ -19,11 +19,17 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Support\Colors\Color;
+use Illuminate\Support\Facades\URL;
 
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
+        // if(app()->environment('production')){
+        // }
+
+        URL::forceScheme('https');
+
         return $panel
             ->brandLogo(asset('logo.svg'))
             ->brandLogoHeight('4rem')
