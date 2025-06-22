@@ -40,11 +40,8 @@ RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/storage \
     && chmod -R 775 /var/www/html/bootstrap/cache
 
-# Switch to www-data user
-USER www-data
-
 # Create startup script
-COPY --chown=www-data:www-data <<EOF /var/www/html/start.sh
+RUN cat > /var/www/html/start.sh << 'EOF'
 #!/bin/bash
 set -e
 
@@ -80,6 +77,9 @@ exec php artisan serve --host=0.0.0.0 --port=8000
 EOF
 
 RUN chmod +x /var/www/html/start.sh
+
+# Switch to www-data user
+USER www-data
 
 # Expose port 8000
 EXPOSE 8000
