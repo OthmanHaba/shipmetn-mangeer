@@ -42,7 +42,7 @@ RUN chown -R www-data:www-data /var/www/html
 RUN chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Install dependencies
-RUN composer install --optimize-autoloader --no-dev
+RUN composer install
 
 # Generate application key
 RUN php artisan key:generate
