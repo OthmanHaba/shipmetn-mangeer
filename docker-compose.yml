@@ -3,65 +3,56 @@ services:
         build:
             context: .
             dockerfile: Dockerfile
-        container_name: shipment_accounting_app
+        image: shipment-app
+        container_name: shipment-app
         restart: unless-stopped
-        working_dir: /var/www/html
+        working_dir: /var/www
         volumes:
-            - ./:/var/www/html
-            - ./storage:/var/www/html/storage
-            - ./bootstrap/cache:/var/www/html/bootstrap/cache
-        ports:
-            - "9090:8000"
-        environment:
-            - APP_NAME=ShipmentAccounting
-            - APP_ENV=production
-            - APP_KEY=base64:your-app-key-here
-            - APP_DEBUG=false
-            - APP_URL=http://localhost:8000
-            - DB_CONNECTION=pgsql
-            - DB_HOST=db
-            - DB_PORT=5432
-            - DB_DATABASE=shipment_accounting
-            - DB_USERNAME=postgres
-            - DB_PASSWORD=password
-            - CACHE_DRIVER=file
-            - QUEUE_CONNECTION=sync
-            - SESSION_DRIVER=file
-            - SESSION_LIFETIME=120
-        depends_on:
-            - db
+            - ./:/var/www
         networks:
-            - shipment_network
+            - app-network
+
+    webserver:
+        image: nginx:alpine
+        container_name: nginx
+        restart: unless-stopped
+        ports:
+            - "90:80"
+        volumes:
+            - ./:/var/www
+            - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+        depends_on:
+            - app
+        networks:
+            - app-network
 
     db:
-        image: postgres:15-alpine
-        container_name: shipment_accounting_db
+        image: postgres
+        container_name: postgres
         restart: unless-stopped
         environment:
-            - POSTGRES_DB=shipment_accounting
-            - POSTGRES_USER=postgres
-            - POSTGRES_PASSWORD=password
-            - PGDATA=/var/lib/postgresql/data/pgdata
-        volumes:
-            - postgres_data:/var/lib/postgresql/data
+            POSTGRES_DB: rehlaty
+            POSTGRES_USER: rehlaty
+            POSTGRES_PASSWORD: secret
         ports:
-            - "5432:5432"
+            - "5433:5432"
+        volumes:
+            - pGData:/var/lib/postgresql/data
         networks:
-            - shipment_network
+            - app-network
 
     redis:
-        image: redis:7-alpine
-        container_name: shipment_accounting_redis
+        image: redis:alpine
+        container_name: redis
         restart: unless-stopped
         ports:
             - "6379:6379"
         networks:
-            - shipment_network
+            - app-network
 
 volumes:
-    postgres_data:
-        driver: local
+    pGData:
 
 networks:
-    shipment_network:
+    app-network:
         driver: bridge

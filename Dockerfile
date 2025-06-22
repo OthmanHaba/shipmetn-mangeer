@@ -1,67 +1,56 @@
-FROM php:8.3-fpm
+FROM php:8.2-fpm
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Install system dependencies
+# Install dependencies
 RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpng-dev \
+    libjpeg62-turbo-dev \
+    libfreetype6-dev \
+    locales \
+    zip \
+    jpegoptim optipng pngquant gifsicle \
+    vim \
+    unzip \
     git \
     curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    libpq-dev \
-    postgresql-client \
-    libicu-dev \
     libzip-dev \
-    zip \
-    unzip \
-    nodejs \
-    npm
+    libonig-dev \
+    libicu-dev \
+    libpq-dev
 
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions
-RUN docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd intl zip
+# Install extensions
+RUN docker-php-ext-install pdo_mysql mbstring zip exif pcntl
+RUN docker-php-ext-install gd
+RUN docker-php-ext-configure intl && docker-php-ext-install intl
+RUN docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql && \
+    docker-php-ext-install pgsql pdo_pgsql
 
-# Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Install composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Copy application files
-COPY . .
+COPY . /var/www/html
 
-# Install Composer dependencies
-RUN composer install
+# Set permissions
+RUN chown -R www-data:www-data /var/www/html
+RUN chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Set proper permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html \
-    && chmod -R 775 /var/www/html/storage \
-    && chmod -R 775 /var/www/html/bootstrap/cache
+# Install dependencies
+RUN composer install --optimize-autoloader --no-dev
 
-# Create startup script
-CMD echo "Starting Laravel application setup..." && \
-    if [ ! -f .env ]; then cp .env.example .env; fi && \
-    php artisan key:generate --force && \
-    echo "Waiting for database to be ready..." && \
-    until pg_isready -h db -p 5432 -U postgres; do \
-        echo "Database is unavailable - sleeping" && \
-        sleep 2; \
-    done && \
-    echo "Database is ready!" && \
-    php artisan config:cache && \
-    php artisan route:cache && \
-    php artisan view:cache && \
-    php artisan migrate --force && \
-    php artisan db:seed --force && \
-    echo "Laravel setup completed!"
+# Generate application key
+RUN php artisan key:generate
 
-# Switch to www-data user
-USER www-data
+# Cache configuration and routes
+RUN php artisan config:cache
+RUN php artisan route:cache
+RUN php artisan view:cache
 
-# Expose port 8000
-EXPOSE 8000
 
-# Start the application
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+CMD ["php-fpm"]
