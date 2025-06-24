@@ -17,8 +17,8 @@ class ListShipments extends ListRecords
         ];
     }
 
-    public function getRecordUrlUsing(): ?Closure
-    {
-        return null;
-    }
+    // public function getRecordUrlUsing(): ?Closure
+    // {
+    //     return null;
+    // }
 }

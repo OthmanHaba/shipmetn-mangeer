@@ -52,6 +52,9 @@ return [
         'change_status_tooltip' => 'Change shipment status',
         'status_updated' => 'Status Updated',
         'status_changed_to' => 'Shipment status changed to',
+        'items' => 'Shipment Items',
+        'shipment_price' => 'Total Shipment Price',
+        'shipment_price_helper' => 'This value is automatically calculated from shipment items',
         'statuses' => [
             'pending' => 'Pending',
             'in_transit' => 'In Transit',
@@ -162,6 +165,10 @@ return [
         'status' => 'Status',
         'generate_invoice' => 'Generate Invoice',
         'generate_invoice_tooltip' => 'Create an invoice for this shipment',
+        'invoice_already_exists' => 'Invoice already exists for this shipment',
+        'print_invoice' => 'Print Invoice',
+        'print_invoice_tooltip' => 'Print the invoice for this shipment',
+        'thank_you' => 'Thank you for your business!',
         'statuses' => [
             'draft' => 'Draft',
             'sent' => 'Sent',
@@ -242,5 +249,20 @@ return [
         'close' => 'Close',
         'select_option' => 'Select an option',
         'required_field' => 'This field is required',
+    ],
+
+    // Shipment Items
+    'shipment_item' => [
+        'title' => 'Shipment Item',
+        'title_plural' => 'Shipment Items',
+        'weight' => 'Weight (kg)',
+        'height' => 'Height (m)',
+        'width' => 'Width (m)',
+        'length' => 'Length (m)',
+        'package_count' => 'Package Count',
+        'price_per_cubic_meter' => 'Price per m³',
+        'calculate_price' => 'Calculate Price',
+        'total_price' => 'Total Price',
+        'enable_manual_price' => 'Enable Manual Price Edit',
     ],
 ];

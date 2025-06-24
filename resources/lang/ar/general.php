@@ -52,6 +52,9 @@ return [
         'change_status_tooltip' => 'تغيير حالة الشحنة',
         'status_updated' => 'تم تحديث الحالة',
         'status_changed_to' => 'تم تغيير حالة الشحنة إلى',
+        'items' => 'عناصر الشحنة',
+        'shipment_price' => 'السعر الإجمالي للشحنة',
+        'shipment_price_helper' => 'يتم حساب هذه القيمة تلقائيًا من عناصر الشحنة',
         'statuses' => [
             'pending' => 'قيد الانتظار',
             'in_transit' => 'قيد النقل',
@@ -162,6 +165,10 @@ return [
         'status' => 'الحالة',
         'generate_invoice' => 'إنشاء فاتورة',
         'generate_invoice_tooltip' => 'إنشاء فاتورة لهذه الشحنة',
+        'invoice_already_exists' => 'توجد فاتورة بالفعل لهذه الشحنة',
+        'print_invoice' => 'طباعة الفاتورة',
+        'print_invoice_tooltip' => 'طباعة الفاتورة لهذه الشحنة',
+        'thank_you' => 'شكراً لتعاملكم معنا!',
         'statuses' => [
             'draft' => 'مسودة',
             'sent' => 'تم الإرسال',
@@ -242,5 +249,20 @@ return [
         'close' => 'إغلاق',
         'select_option' => 'اختر خياراً',
         'required_field' => 'هذا الحقل مطلوب',
+    ],
+
+    // Shipment Items
+    'shipment_item' => [
+        'title' => 'عنصر الشحنة',
+        'title_plural' => 'عناصر الشحنة',
+        'weight' => 'الوزن (كجم)',
+        'height' => 'الارتفاع (م)',
+        'width' => 'العرض (م)',
+        'length' => 'الطول (م)',
+        'package_count' => 'عدد الطرود',
+        'price_per_cubic_meter' => 'السعر لكل م³',
+        'calculate_price' => 'احسب السعر',
+        'total_price' => 'السعر الإجمالي',
+        'enable_manual_price' => 'تمكين تعديل السعر يدوياً',
     ],
 ];

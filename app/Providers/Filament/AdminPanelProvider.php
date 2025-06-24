@@ -3,8 +3,8 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Dashboard;
-use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use BezhanSalleh\FilamentLanguageSwitch\FilamentLanguageSwitchPlugin;
+use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\FontProviders\LocalFontProvider;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -12,35 +12,28 @@ use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Support\Colors\Color;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
-use Illuminate\View\Middleware\ShareErrorsFromSession;
-use Filament\Support\Colors\Color;
 use Illuminate\Support\Facades\URL;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
-        // if(app()->environment('production')){
-        // }
-
         URL::forceScheme('https');
 
         return $panel
-            ->brandLogo(asset('logo.svg'))
-            ->brandLogoHeight('4rem')
+            ->brandLogo(asset('applogo.png'))
+            ->brandLogoHeight('8rem')
             ->font(family: 'cairo', url: asset('css/font.css'), provider: LocalFontProvider::class)
             ->colors([
                 'primary' => Color::Hex('#2bc2bf'),
                 'secondary' => Color::Hex('#1b97a6'),
-                // 'accent' => Color::Green,
-                // 'info' => Color::Blue,
-                // 'success' => Color::Green,
-                // 'warning' => Color::Yellow,
             ])
             ->default()
             ->id('admin')

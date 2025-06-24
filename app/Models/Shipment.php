@@ -21,6 +21,7 @@ class Shipment extends Model
         'estimated_arrival',
         'actual_departure',
         'actual_arrival',
+        'shipment_price',
     ];
 
     protected $casts = [
@@ -28,6 +29,7 @@ class Shipment extends Model
         'estimated_arrival' => 'datetime',
         'actual_departure' => 'datetime',
         'actual_arrival' => 'datetime',
+        'shipment_price' => 'decimal:2',
     ];
 
     /**
@@ -100,5 +102,41 @@ class Shipment extends Model
     public function journalEntries(): HasMany
     {
         return $this->hasMany(JournalEntry::class);
+    }
+
+    /**
+     * Get the items for this shipment.
+     */
+    public function items(): HasMany
+    {
+        return $this->hasMany(ShipmentItem::class);
+    }
+
+    /**
+     * Calculate and update the total shipment price based on items.
+     */
+    public function calculateTotalPrice(): float
+    {
+        $totalPrice = $this->items()->sum('total_price');
+
+        $this->shipment_price = $totalPrice;
+        $this->save();
+
+        return $totalPrice;
+    }
+
+    /**
+     * Boot method to auto-calculate shipment price when items are updated.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Recalculate shipment price when saving
+        static::saved(function ($shipment) {
+            if ($shipment->wasRecentlyCreated || $shipment->isDirty(['id'])) {
+                return; // Skip calculation on initial creation
+            }
+        });
     }
 }

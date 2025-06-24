@@ -27,6 +27,7 @@ class ShipmentSeeder extends Seeder
                 'estimated_departure' => Carbon::now()->subDays(7),
                 'estimated_arrival' => Carbon::now()->addDays(14),
                 'actual_departure' => Carbon::now()->subDays(6),
+                'shipment_price' => 5000.00,
                 'actual_arrival' => null,
             ],
             [
@@ -38,6 +39,7 @@ class ShipmentSeeder extends Seeder
                 'estimated_departure' => Carbon::now()->subDays(10),
                 'estimated_arrival' => Carbon::now()->subDays(8),
                 'actual_departure' => Carbon::now()->subDays(10),
+                'shipment_price' => 5000.00,
                 'actual_arrival' => Carbon::now()->subDays(8),
             ],
             [
@@ -48,6 +50,8 @@ class ShipmentSeeder extends Seeder
                 'consignee_customer_id' => Customer::where('customer_name', 'Global Logistics Co.')->first()->id,
                 'estimated_departure' => Carbon::now()->addDays(3),
                 'estimated_arrival' => Carbon::now()->addDays(8),
+                'shipment_price' => 5000.00,
+
                 'actual_departure' => null,
                 'actual_arrival' => null,
             ],

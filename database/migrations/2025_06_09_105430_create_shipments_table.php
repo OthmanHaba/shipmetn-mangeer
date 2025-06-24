@@ -23,6 +23,7 @@ return new class extends Migration
             $table->timestamp('estimated_arrival')->nullable();
             $table->timestamp('actual_departure')->nullable();
             $table->timestamp('actual_arrival')->nullable();
+            $table->decimal('shipment_price', 15, 2);
             $table->timestamps();
         });
     }

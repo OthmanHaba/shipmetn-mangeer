@@ -364,6 +364,104 @@ class ShipmentResource extends Resource
                             }),
                     ]),
 
+                Forms\Components\Section::make(__('general.shipment.items'))
+                    ->schema([
+                        Forms\Components\Repeater::make('items')
+                            ->label(__('general.shipment_item.title_plural'))
+                            ->relationship('items')
+                            ->schema([
+                                Forms\Components\TextInput::make('weight')
+                                    ->label(__('general.shipment_item.weight'))
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->step(0.01)
+                                    ->suffix('kg')
+                                    ->live()
+                                    ->afterStateUpdated(fn ($state, callable $set, callable $get) => self::calculateItemPrice($state, $set, $get)),
+
+                                Forms\Components\TextInput::make('height')
+                                    ->label(__('general.shipment_item.height'))
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->step(0.01)
+                                    ->suffix('m')
+                                    ->live()
+                                    ->afterStateUpdated(fn ($state, callable $set, callable $get) => self::calculateItemPrice($state, $set, $get)),
+
+                                Forms\Components\TextInput::make('width')
+                                    ->label(__('general.shipment_item.width'))
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->step(0.01)
+                                    ->suffix('m')
+                                    ->live()
+                                    ->afterStateUpdated(fn ($state, callable $set, callable $get) => self::calculateItemPrice($state, $set, $get)),
+
+                                Forms\Components\TextInput::make('length')
+                                    ->label(__('general.shipment_item.length'))
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->step(0.01)
+                                    ->suffix('m')
+                                    ->live()
+                                    ->afterStateUpdated(fn ($state, callable $set, callable $get) => self::calculateItemPrice($state, $set, $get)),
+
+                                Forms\Components\TextInput::make('package_count')
+                                    ->label(__('general.shipment_item.package_count'))
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->default(1)
+                                    ->live()
+                                    ->afterStateUpdated(fn ($state, callable $set, callable $get) => self::calculateItemPrice($state, $set, $get)),
+
+                                Forms\Components\TextInput::make('price_per_cubic_meter')
+                                    ->label(__('general.shipment_item.price_per_cubic_meter'))
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->step(0.01)
+                                    ->prefix('$')
+                                    ->live()
+                                    ->afterStateUpdated(fn ($state, callable $set, callable $get) => self::calculateItemPrice($state, $set, $get)),
+
+                                Forms\Components\Actions::make([
+                                    Forms\Components\Actions\Action::make('calculate_price')
+                                        ->label(__('general.shipment_item.calculate_price'))
+                                        ->icon('heroicon-m-calculator')
+                                        ->color('primary')
+                                        ->action(function (callable $set, callable $get) {
+                                            self::calculateItemPrice(null, $set, $get);
+                                        }),
+                                ]),
+
+                                Forms\Components\Grid::make(2)
+                                    ->schema([
+                                        Forms\Components\TextInput::make('total_price')
+                                            ->label(__('general.shipment_item.total_price'))
+                                            ->numeric()
+                                            ->prefix('$')
+                                            ->disabled(fn (callable $get) => ! $get('enable_manual_edit'))
+                                            ->dehydrated(),
+
+                                        Forms\Components\Toggle::make('enable_manual_edit')
+                                            ->label(__('general.shipment_item.enable_manual_price'))
+                                            ->inline()
+                                            ->default(false)
+                                            ->reactive()
+                                            ->dehydrated(false),
+                                    ]),
+                            ])
+                            ->columns(3)
+                            ->defaultItems(1)
+                            ->collapsible()
+                            ->itemLabel(function (array $state): ?string {
+                                $weight = $state['weight'] ?? 0;
+                                $packageCount = $state['package_count'] ?? 1;
+                                $totalPrice = $state['total_price'] ?? 0;
+
+                                return "Item: {$packageCount} package(s), {$weight} kg - \${$totalPrice}";
+                            }),
+                    ]),
+
                 Forms\Components\Section::make(__('general.date'))
                     ->schema([
                         Forms\Components\DateTimePicker::make('estimated_departure')
@@ -377,6 +475,15 @@ class ShipmentResource extends Resource
 
                         Forms\Components\DateTimePicker::make('actual_arrival')
                             ->label(__('general.shipment.actual_arrival')),
+
+                        Forms\Components\TextInput::make('shipment_price')
+                            ->label(__('general.shipment.shipment_price'))
+                            ->prefix('$')
+                            ->disabled()
+                            ->dehydrated()
+                            ->numeric()
+                            ->default(0)
+                            ->helperText(__('general.shipment.shipment_price_helper')),
                     ])
                     ->columns(2),
             ]);
@@ -441,6 +548,13 @@ class ShipmentResource extends Resource
                     ->label(__('general.shipment.estimated_arrival'))
                     ->dateTime()
                     ->sortable(),
+
+                Tables\Columns\TextColumn::make('shipment_price')
+                    ->label(__('general.shipment.shipment_price'))
+                    ->money('LYD')
+                    ->sortable()
+                    ->badge()
+                    ->color('success'),
             ])
             ->filters([
                 //
@@ -457,7 +571,25 @@ class ShipmentResource extends Resource
                     ->icon('heroicon-o-document-text')
                     ->label(__('general.invoice.generate_invoice'))
                     ->tooltip(__('general.invoice.generate_invoice_tooltip'))
-                    ->color('success'),
+                    ->color('success')
+                    ->visible(fn (Shipment $record): bool => $record->shipment_price > 0)
+                    ->disabled(fn (Shipment $record): bool => $record->invoices()->exists())
+                    ->disabledForm(fn (Shipment $record): bool => $record->invoices()->exists())
+                    ->tooltip(fn (Shipment $record): string => $record->invoices()->exists()
+                            ? __('general.invoice.invoice_already_exists')
+                            : __('general.invoice.generate_invoice_tooltip')
+                    ),
+                Tables\Actions\Action::make('print_invoice')
+                    ->icon('heroicon-o-printer')
+                    ->label(__('general.invoice.print_invoice'))
+                    ->tooltip(__('general.invoice.print_invoice_tooltip'))
+                    ->color('info')
+                    ->visible(fn (Shipment $record): bool => $record->invoices()->exists())
+                    ->url(fn (Shipment $record): string => $record->invoices()->exists()
+                            ? route('invoices.print', ['invoice' => $record->invoices()->first()->id])
+                            : '#'
+                    )
+                    ->openUrlInNewTab(),
                 Tables\Actions\Action::make('change_status')
                     ->icon('heroicon-o-arrow-path')
                     ->label(__('general.shipment.change_status'))
@@ -548,6 +680,13 @@ class ShipmentResource extends Resource
                         Infolists\Components\TextEntry::make('consignee.customer_name')
                             ->label(__('general.shipment.consignee')),
 
+                        Infolists\Components\TextEntry::make('shipment_price')
+                            ->label(__('general.shipment.shipment_price'))
+                            ->money('LYD')
+                            ->badge()
+                            ->color('success')
+                            ->size('lg'),
+
                     ])
                     ->columns(3),
 
@@ -610,6 +749,43 @@ class ShipmentResource extends Resource
                             ])
                             ->columns(6),
                     ]),
+
+                Infolists\Components\Section::make(__('general.shipment.items'))
+                    ->schema([
+                        Infolists\Components\RepeatableEntry::make('items')
+                            ->label('')
+                            ->schema([
+                                Infolists\Components\TextEntry::make('weight')
+                                    ->label(__('general.shipment_item.weight'))
+                                    ->suffix(' kg'),
+
+                                Infolists\Components\TextEntry::make('height')
+                                    ->label(__('general.shipment_item.height'))
+                                    ->suffix(' m'),
+
+                                Infolists\Components\TextEntry::make('width')
+                                    ->label(__('general.shipment_item.width'))
+                                    ->suffix(' m'),
+
+                                Infolists\Components\TextEntry::make('length')
+                                    ->label(__('general.shipment_item.length'))
+                                    ->suffix(' m'),
+
+                                Infolists\Components\TextEntry::make('package_count')
+                                    ->label(__('general.shipment_item.package_count')),
+
+                                Infolists\Components\TextEntry::make('price_per_cubic_meter')
+                                    ->label(__('general.shipment_item.price_per_cubic_meter'))
+                                    ->money('LYD'),
+
+                                Infolists\Components\TextEntry::make('total_price')
+                                    ->label(__('general.shipment_item.total_price'))
+                                    ->money('LYD')
+                                    ->badge()
+                                    ->color('success'),
+                            ])
+                            ->columns(7),
+                    ]),
             ]);
     }
 
@@ -650,5 +826,28 @@ class ShipmentResource extends Resource
 
         // Format: SH + Year + Month + 4-digit sequence (e.g., SH2025010001)
         return sprintf('SH%s%s%04d', $year, $month, $nextSequence);
+    }
+
+    private static function calculateItemPrice($state, callable $set, callable $get): void
+    {
+        // Don't calculate if manual edit is enabled
+        if ($get('enable_manual_edit')) {
+            return;
+        }
+
+        $height = floatval($get('height') ?? 0);
+        $width = floatval($get('width') ?? 0);
+        $length = floatval($get('length') ?? 0);
+        $packageCount = intval($get('package_count') ?? 1);
+        $pricePerCubicMeter = floatval($get('price_per_cubic_meter') ?? 0);
+
+        // Calculate volume in cubic meters
+        $volume = $height * $width * $length * $packageCount;
+
+        // Calculate total price
+        $totalPrice = $volume * $pricePerCubicMeter;
+
+        // Set the calculated price
+        $set('total_price', round($totalPrice, 2));
     }
 }

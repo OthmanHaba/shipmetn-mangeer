@@ -53,6 +53,16 @@ class InvoiceResource extends Resource
                             ->searchable()
                             ->preload()
                             ->default(fn () => request()->get('shipment_id'))
+                            ->live()
+                            ->afterStateUpdated(function ($state, callable $set) {
+                                if ($state) {
+                                    $shipment = \App\Models\Shipment::find($state);
+                                    if ($shipment) {
+                                        $set('customer_id', $shipment->shipper_customer_id);
+                                        $set('total_amount', $shipment->shipment_price ?? 0);
+                                    }
+                                }
+                            })
                             ->required(),
 
                         Forms\Components\Select::make('customer_id')
@@ -86,7 +96,18 @@ class InvoiceResource extends Resource
                             ->label(__('general.invoice.total_amount'))
                             ->required()
                             ->numeric()
-                            ->step(0.01),
+                            ->step(0.01)
+                            ->prefix('LYD ')
+                            ->default(function () {
+                                $shipmentId = request()->get('shipment_id');
+                                if ($shipmentId) {
+                                    $shipment = \App\Models\Shipment::find($shipmentId);
+
+                                    return $shipment?->shipment_price ?? 0;
+                                }
+
+                                return 0;
+                            }),
 
                         Forms\Components\Select::make('status')
                             ->label(__('general.invoice.status'))
@@ -133,7 +154,7 @@ class InvoiceResource extends Resource
 
                 Tables\Columns\TextColumn::make('total_amount')
                     ->label(__('general.invoice.total_amount'))
-                    ->money('USD')
+                    ->money('LYD')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('status')
@@ -158,6 +179,12 @@ class InvoiceResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\Action::make('print')
+                    ->icon('heroicon-o-printer')
+                    ->label(__('general.invoice.print_invoice'))
+                    ->url(fn (Invoice $record): string => route('invoices.print', ['invoice' => $record->id]))
+                    ->openUrlInNewTab()
+                    ->color('info'),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
