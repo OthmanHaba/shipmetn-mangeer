@@ -6,9 +6,17 @@
     <title>{{ __('general.invoice.title') }} #{{ $invoice->invoice_number }}</title>
     <style>
         @media print {
-            body { margin: 0; }
-            .no-print { display: none !important; }
-            @page { margin: 0.5cm; }
+            body {
+                margin: 0;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            @page {
+                margin: 0.5cm;
+            }
         }
 
         @font-face {
@@ -30,7 +38,7 @@
         @media screen {
             body {
                 /* Shadow effect to show A4 page on screen */
-                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
                 margin: 20px auto;
                 min-height: 297mm; /* A4 height */
             }
@@ -219,182 +227,189 @@
             left: 20px;
         }
 
-                 /* A4 page setup */
-         @page {
-             size: A4;
-             margin: 15mm; /* Consistent margins all around */
-         }
+        /* A4 page setup */
+        @page {
+            size: A4;
+            margin: 15mm; /* Consistent margins all around */
+        }
 
-         @media print {
-             body {
-                 margin: 0;
-                 padding: 0;
-                 -webkit-print-color-adjust: exact;
-                 print-color-adjust: exact;
-                 width: 100%;
-                 max-width: 100%;
-                 min-height: auto;
-                 box-shadow: none;
-             }
-             .no-print { display: none !important; }
-             .page-break { page-break-after: always; }
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                width: 100%;
+                max-width: 100%;
+                min-height: auto;
+                box-shadow: none;
+            }
 
-             /* Adjust content spacing for print */
-             .header {
-                 margin-bottom: 20px;
-                 padding-bottom: 15px;
-             }
+            .no-print {
+                display: none !important;
+            }
 
-             .parties {
-                 margin-bottom: 20px;
-             }
+            .page-break {
+                page-break-after: always;
+            }
 
-             .invoice-details {
-                 margin-bottom: 20px;
-                 padding: 15px;
-             }
+            /* Adjust content spacing for print */
+            .header {
+                margin-bottom: 20px;
+                padding-bottom: 15px;
+            }
 
-             .items-table {
-                 margin-bottom: 20px;
-             }
+            .parties {
+                margin-bottom: 20px;
+            }
 
-             .footer {
-                 margin-top: 30px;
-             }
-         }
+            .invoice-details {
+                margin-bottom: 20px;
+                padding: 15px;
+            }
+
+            .items-table {
+                margin-bottom: 20px;
+            }
+
+            .footer {
+                margin-top: 30px;
+            }
+        }
     </style>
 </head>
 <body>
-    <button class="print-button no-print" onclick="window.print()">
-        {{ __('general.invoice.print_invoice') }}
-    </button>
+<button class="print-button no-print" onclick="window.print()">
+    {{ __('general.invoice.print_invoice') }}
+</button>
 
-    <div class="header">
-        <div class="logo">
-             <img src="{{ asset('applogo.png') }}" alt="logo" height="100" width="150">
-        </div>
-        <div class="invoice-title">
-            <h1>{{ __('general.invoice.title') }}</h1>
-            <div class="invoice-number">#{{ $invoice->invoice_number }}</div>
-        </div>
+<div class="header">
+    <div class="logo">
+        {{--             <img src="{{ asset('applogo.png') }}" alt="logo" height="100" width="150">--}}
+    </div>
+    <div class="invoice-title">
+        <h1>{{ __('general.invoice.title') }}</h1>
+        <div class="invoice-number">#{{ $invoice->invoice_number }}</div>
+    </div>
+</div>
+
+<div class="parties">
+    <div class="party">
+        <h3>{{ __('general.shipment.shipper') }}</h3>
+        <p><strong>{{ $invoice->shipment->shipper->customer_name }}</strong></p>
+        @if($invoice->shipment->shipper->email)
+            <p>{{ $invoice->shipment->shipper->email }}</p>
+        @endif
+        @if($invoice->shipment->shipper->phone)
+            <p>{{ $invoice->shipment->shipper->phone }}</p>
+        @endif
+        @if($invoice->shipment->shipper->address)
+            <p>{{ $invoice->shipment->shipper->address }}</p>
+        @endif
+        @if($invoice->shipment->shipper->city || $invoice->shipment->shipper->country)
+            <p>{{ $invoice->shipment->shipper->city }}{{ $invoice->shipment->shipper->city && $invoice->shipment->shipper->country ? ', ' : '' }}{{ $invoice->shipment->shipper->country }}</p>
+        @endif
     </div>
 
-    <div class="parties">
-        <div class="party">
-            <h3>{{ __('general.shipment.shipper') }}</h3>
-            <p><strong>{{ $invoice->shipment->shipper->customer_name }}</strong></p>
-            @if($invoice->shipment->shipper->email)
-                <p>{{ $invoice->shipment->shipper->email }}</p>
-            @endif
-            @if($invoice->shipment->shipper->phone)
-                <p>{{ $invoice->shipment->shipper->phone }}</p>
-            @endif
-            @if($invoice->shipment->shipper->address)
-                <p>{{ $invoice->shipment->shipper->address }}</p>
-            @endif
-            @if($invoice->shipment->shipper->city || $invoice->shipment->shipper->country)
-                <p>{{ $invoice->shipment->shipper->city }}{{ $invoice->shipment->shipper->city && $invoice->shipment->shipper->country ? ', ' : '' }}{{ $invoice->shipment->shipper->country }}</p>
-            @endif
-        </div>
+    <div class="party">
+        <h3>{{ __('general.shipment.consignee') }}</h3>
+        <p><strong>{{ $invoice->shipment->consignee->customer_name }}</strong></p>
+        @if($invoice->shipment->consignee->email)
+            <p>{{ $invoice->shipment->consignee->email }}</p>
+        @endif
+        @if($invoice->shipment->consignee->phone)
+            <p>{{ $invoice->shipment->consignee->phone }}</p>
+        @endif
+        @if($invoice->shipment->consignee->address)
+            <p>{{ $invoice->shipment->consignee->address }}</p>
+        @endif
+        @if($invoice->shipment->consignee->city || $invoice->shipment->consignee->country)
+            <p>{{ $invoice->shipment->consignee->city }}{{ $invoice->shipment->consignee->city && $invoice->shipment->consignee->country ? ', ' : '' }}{{ $invoice->shipment->consignee->country }}</p>
+        @endif
+    </div>
+</div>
 
-        <div class="party">
-            <h3>{{ __('general.shipment.consignee') }}</h3>
-            <p><strong>{{ $invoice->shipment->consignee->customer_name }}</strong></p>
-            @if($invoice->shipment->consignee->email)
-                <p>{{ $invoice->shipment->consignee->email }}</p>
-            @endif
-            @if($invoice->shipment->consignee->phone)
-                <p>{{ $invoice->shipment->consignee->phone }}</p>
-            @endif
-            @if($invoice->shipment->consignee->address)
-                <p>{{ $invoice->shipment->consignee->address }}</p>
-            @endif
-            @if($invoice->shipment->consignee->city || $invoice->shipment->consignee->country)
-                <p>{{ $invoice->shipment->consignee->city }}{{ $invoice->shipment->consignee->city && $invoice->shipment->consignee->country ? ', ' : '' }}{{ $invoice->shipment->consignee->country }}</p>
-            @endif
+<div class="invoice-details">
+    <div class="detail-item">
+        <div class="detail-label">{{ __('general.invoice.issue_date') }}</div>
+        <div class="detail-value">{{ $invoice->issue_date->format('Y-m-d') }}</div>
+    </div>
+    <div class="detail-item">
+        <div class="detail-label">{{ __('general.invoice.due_date') }}</div>
+        <div class="detail-value">{{ $invoice->due_date->format('Y-m-d') }}</div>
+    </div>
+    <div class="detail-item">
+        <div class="detail-label">{{ __('general.shipment.reference_id') }}</div>
+        <div class="detail-value">{{ $invoice->shipment->reference_id }}</div>
+    </div>
+    <div class="detail-item">
+        <div class="detail-label">{{ __('general.invoice.status') }}</div>
+        <div class="detail-value">
+            @switch($invoice->status)
+                @case('DRAFT')
+                    {{ __('general.invoice.statuses.draft') }}
+                    @break
+                @case('SENT')
+                    {{ __('general.invoice.statuses.sent') }}
+                    @break
+                @case('PAID')
+                    {{ __('general.invoice.statuses.paid') }}
+                    @break
+                @case('VOID')
+                    {{ __('general.invoice.statuses.void') }}
+                    @break
+            @endswitch
         </div>
     </div>
+</div>
 
-    <div class="invoice-details">
-        <div class="detail-item">
-            <div class="detail-label">{{ __('general.invoice.issue_date') }}</div>
-            <div class="detail-value">{{ $invoice->issue_date->format('Y-m-d') }}</div>
-        </div>
-        <div class="detail-item">
-            <div class="detail-label">{{ __('general.invoice.due_date') }}</div>
-            <div class="detail-value">{{ $invoice->due_date->format('Y-m-d') }}</div>
-        </div>
-        <div class="detail-item">
-            <div class="detail-label">{{ __('general.shipment.reference_id') }}</div>
-            <div class="detail-value">{{ $invoice->shipment->reference_id }}</div>
-        </div>
-        <div class="detail-item">
-            <div class="detail-label">{{ __('general.invoice.status') }}</div>
-            <div class="detail-value">
-                @switch($invoice->status)
-                    @case('DRAFT')
-                        {{ __('general.invoice.statuses.draft') }}
-                        @break
-                    @case('SENT')
-                        {{ __('general.invoice.statuses.sent') }}
-                        @break
-                    @case('PAID')
-                        {{ __('general.invoice.statuses.paid') }}
-                        @break
-                    @case('VOID')
-                        {{ __('general.invoice.statuses.void') }}
-                        @break
-                @endswitch
-            </div>
-        </div>
+@if($invoice->shipment->items->count() > 0)
+    <table class="items-table">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>{{ __('general.shipment_item.weight') }}</th>
+            <th>{{ __('general.shipment_item.height') }} x {{ __('general.shipment_item.width') }}
+                x {{ __('general.shipment_item.length') }}</th>
+            <th>{{ __('general.shipment_item.package_count') }}</th>
+            <th>{{ __('general.shipment_item.price_per_cubic_meter') }}</th>
+            <th class="text-right">{{ __('general.shipment_item.total_price') }}</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach($invoice->shipment->items as $index => $item)
+            <tr>
+                <td>{{ $index + 1 }}</td>
+                <td>{{ $item->weight }} kg</td>
+                <td>{{ $item->height }} x {{ $item->width }} x {{ $item->length }} m</td>
+                <td>{{ $item->package_count }}</td>
+                <td>LYD {{ number_format($item->price_per_cubic_meter, 2) }}</td>
+                <td class="text-right">LYD {{ number_format($item->total_price, 2) }}</td>
+            </tr>
+        @endforeach
+        </tbody>
+    </table>
+@endif
+
+<div class="totals">
+    <div class="total-row grand-total">
+        <span>{{ __('general.invoice.total_amount') }}</span>
+        <span>LYD {{ number_format($invoice->total_amount, 2) }}</span>
     </div>
+</div>
 
-    @if($invoice->shipment->items->count() > 0)
-        <table class="items-table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>{{ __('general.shipment_item.weight') }}</th>
-                    <th>{{ __('general.shipment_item.height') }} x {{ __('general.shipment_item.width') }} x {{ __('general.shipment_item.length') }}</th>
-                    <th>{{ __('general.shipment_item.package_count') }}</th>
-                    <th>{{ __('general.shipment_item.price_per_cubic_meter') }}</th>
-                    <th class="text-right">{{ __('general.shipment_item.total_price') }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($invoice->shipment->items as $index => $item)
-                    <tr>
-                        <td>{{ $index + 1 }}</td>
-                        <td>{{ $item->weight }} kg</td>
-                        <td>{{ $item->height }} x {{ $item->width }} x {{ $item->length }} m</td>
-                        <td>{{ $item->package_count }}</td>
-                        <td>LYD {{ number_format($item->price_per_cubic_meter, 2) }}</td>
-                        <td class="text-right">LYD {{ number_format($item->total_price, 2) }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    @endif
+<div class="footer">
+    <p>{{ __('general.invoice.thank_you') }}</p>
+</div>
 
-    <div class="totals">
-        <div class="total-row grand-total">
-            <span>{{ __('general.invoice.total_amount') }}</span>
-            <span>LYD {{ number_format($invoice->total_amount, 2) }}</span>
-        </div>
-    </div>
-
-    <div class="footer">
-        <p>{{ __('general.invoice.thank_you') }}</p>
-    </div>
-
-    <script>
-        // Auto print on load if requested
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('auto_print') === 'true') {
-            window.onload = function() {
-                window.print();
-            }
+<script>
+    // Auto print on load if requested
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('auto_print') === 'true') {
+        window.onload = function () {
+            window.print();
         }
-    </script>
+    }
+</script>
 </body>
 </html>

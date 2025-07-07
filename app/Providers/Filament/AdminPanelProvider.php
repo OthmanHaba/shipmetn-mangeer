@@ -28,7 +28,7 @@ class AdminPanelProvider extends PanelProvider
         URL::forceScheme('https');
 
         return $panel
-            ->brandLogo(asset('applogo.png'))
+            ->brandName('SHPLY')
             ->brandLogoHeight('8rem')
             ->font(family: 'cairo', url: asset('css/font.css'), provider: LocalFontProvider::class)
             ->colors([
